@@ -1,50 +1,34 @@
 import React, {useState, useEffect} from "react"
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from "next/router"
 import styles from '../styles/Home.module.css'
 
 async function dogApiService({page = 0, limit = 15}) {
-  const response = await fetch(`https://api.thedogapi.com/v1/breeds?limit=${limit}&page=${page}`)
-  const pokemon = await response.json()
 
-  return pokemon;
+  const response = await fetch(`http://localhost:3000/api/dog`)
+  const dog = await response.json()
+
+  return dog;
 }
 
-export default function Home({list}) {
+export default function Home() {
   const [page, setPage] = useState(0)
-  const [listDogs, setListDogs] = useState(list)
+  const [listDogs, setListDogs] = useState([])
+  const router = useRouter();
 
-  async function handleLoading() {
-    if(listDogs.length === 15){
-      const newPage = page + 1;
-      setPage(newPage)
-      const result = await dogApiService({page: newPage})
-      setListDogs(result)
-    }
-    
+  async function handleCreateDog(param) {
+    const result = await dogApiService({page: page})
+    router.push(`/dog/${result.id}`)
   }
-
-
 
   return (
     <div className={styles.container}>
-      {listDogs.map((dog, index) => {
-        return <div key={index}>
-        <h2>{dog.name}</h2>
-        {/* <Image src={dog.image.url} width="200px" height="200px" /> */}
-        </div>
-      })}
-     {listDogs.length === 15 && <button onClick={handleLoading}>Carregar</button>}
+    
+    <button onClick={handleCreateDog}>Cadastrar Dog</button>
+   
+
     </div>
   )
-}
-
-
-export async function getServerSideProps () {
-
-  return {
-    props: {
-      list: await dogApiService({})
-    }
-  }
 }
